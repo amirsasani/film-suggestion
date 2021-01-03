@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/amirsasa/repositories/test
+    - /bin/ln -s public $DEPLOYPATH
