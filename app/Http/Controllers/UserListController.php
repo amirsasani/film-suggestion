@@ -79,12 +79,12 @@ class UserListController extends Controller
     public function addTitleToList(Request $request, UserList $list, Title $title) {
         $list->titles()->syncWithoutDetaching($title);
 
-        return redirect()->route('user-lists.show', $list);
+        return back();
     }
 
     public function removeTitleFromList(Request $request, UserList $list, Title $title) {
         $list->titles()->detach([$title->id]);
 
-        return redirect()->route('user-lists.show', $list);
+        return back();
     }
 }
