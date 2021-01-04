@@ -37,9 +37,7 @@ class UserListController extends Controller
     {
         $list = $list->load('titles');
 
-        $titles_to_add = $this->suggestUserTitlesToAdd($list);
-
-        return view('user-lists.show', compact('list', 'titles_to_add'));
+        return view('user-lists.show', compact('list'));
     }
 
     public function suggest(UserList $list)
@@ -56,60 +54,54 @@ class UserListController extends Controller
             ->take(3)
             ->keys()
             ->all();
-
         $suggested_titles = Title::with('genres')->whereHas('genres',
             function (Builder $builder) use ($list_titles_genres) {
                 $builder->whereIn('id', $list_titles_genres);
             });
 
+        $list_titles_average_rating = $list_titles->avg('rate');
+        $suggested_titles = $suggested_titles->where('rate', '>=', $list_titles_average_rating);
+
+        $list_titles_median_end_year = $list_titles->pluck('start_year')->sort()->toArray();
+        $list_titles_median_end_year = $this->remove_outliers($list_titles_median_end_year);
+        $list_titles_median_end_year = collect($list_titles_median_end_year);
+        $list_titles_median_end_year = $list_titles_median_end_year->median();
+        $list_titles_median_end_year = floor($list_titles_median_end_year);
+        $list_titles_median_end_year = intval($list_titles_median_end_year);
+        $suggested_titles = $suggested_titles->where('start_year', '>=', $list_titles_median_end_year);
+
+        $list_titles_median_end_year = $list_titles->pluck('end_year')->sort()->toArray();
+        $list_titles_median_end_year = $this->remove_outliers($list_titles_median_end_year);
+        $list_titles_median_end_year = collect($list_titles_median_end_year);
+        $list_titles_median_end_year = $list_titles_median_end_year->median();
+        $list_titles_median_end_year = floor($list_titles_median_end_year);
+        $list_titles_median_end_year = intval($list_titles_median_end_year);
+        $suggested_titles = $suggested_titles->where('end_year', '<=', $list_titles_median_end_year);
+
         $suggested_titles = $suggested_titles
             ->whereNotIn('id', $list_titles_ids)
-            ->get();
+            ->take(24)
+            ->paginate(6);
 
-        dd($suggested_titles);
+        return view('user-lists.suggestions', ['titles' => $suggested_titles, 'list' => $list]);
     }
 
-    private function suggestUserTitlesToAdd(UserList $list)
+    function remove_outliers($dataset, $magnitude = 1)
     {
-        $titles_to_add = collect();
 
-        $this_list_titles = $list->titles;
-        $all_lists = UserList::with('titles')->whereNotIn('id',
-            auth()->user()->lists()->inRandomOrder()->limit(40)->get()->pluck('id'))->get();
+        $count = count($dataset);
+        $mean = array_sum($dataset) / $count; // Calculate the mean
+        $deviation = sqrt(array_sum(array_map([$this, 'sd_square'], $dataset, array_fill(0, $count,
+                    $mean))) / $count) * $magnitude; // Calculate standard deviation and times by magnitude
 
-        $_sorted_lists = [];
-        $collect_suggestions = false;
-        foreach ($all_lists as $_list) {
-            $intersect = $_list->titles->intersect($this_list_titles)->pluck('id')->toArray();
-            $difference = $_list->titles->whereNotIn('imdb_id',
-                $_list->titles->intersect($this_list_titles)->pluck('imdb_id'))->pluck('id')->toArray();
+        return array_filter($dataset, function ($x) use ($mean, $deviation) {
+            return ($x <= $mean + $deviation && $x >= $mean - $deviation);
+        }); // Return filtered array of values that lie within $mean +- $deviation.
+    }
 
-            if (!$collect_suggestions) {
-                $collect_suggestions = count($difference) > 0;
-            }
-
-            $_sorted_lists[] = compact('intersect', 'difference');
-        }
-
-        if ($collect_suggestions) {
-            usort($_sorted_lists, function ($a, $b) {
-                return (count($b['intersect']) - count($a['intersect']));
-            });
-
-            foreach ($_sorted_lists as $sorted_list) {
-                $titles_to_add = $titles_to_add->merge($sorted_list['difference']);
-            }
-
-            $titles_to_add = $titles_to_add->unique();
-
-        } else {
-            $titles_to_add = Title::whereNotIn('id',
-                $list->titles->pluck('id')->toArray())->inRandomOrder()->limit(5)->pluck('id')->toArray();
-        }
-
-        $titles_to_add = Title::find($titles_to_add);
-
-        return $titles_to_add;
+    function sd_square($x, $mean)
+    {
+        return pow($x - $mean, 2);
     }
 
     public function addTitleToList(Request $request, UserList $list, Title $title)
