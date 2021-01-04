@@ -37,6 +37,7 @@ class TitlesController extends Controller
 
         $selected = [];
         $titles = $this->filterTitles($request, $titles, $selected);
+        $titles = $titles->orderByDesc('updated_at');
         $titles = $titles->paginate(12);
 
         $user_lists = [];
