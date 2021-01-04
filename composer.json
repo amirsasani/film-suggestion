@@ -15,7 +15,8 @@
         "imdbphp/imdbphp": "^6.4",
         "laravel/framework": "^8.0",
         "laravel/tinker": "^2.0",
-        "laravel/ui": "^3.0"
+        "laravel/ui": "^3.0",
+        "ext-zlib": "*"
     },
     "require-dev": {
         "facade/ignition": "^2.3.6",

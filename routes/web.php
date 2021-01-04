@@ -15,12 +15,12 @@ use Illuminate\Support\Facades\Route;
 Auth::routes();
 
 Route::get('/', [\App\Http\Controllers\TitlesController::class, 'index'])->name('home');
+Route::get('/test', [\App\Http\Controllers\TitlesController::class, 'test']);
 
 Route::prefix('titles')->group(function () {
     Route::get('/', [\App\Http\Controllers\TitlesController::class, 'index'])->name('titles.index');
     Route::get('/new', [\App\Http\Controllers\TitlesController::class, 'insertForm'])->name('titles.insert.form');
     Route::post('/new', [\App\Http\Controllers\TitlesController::class, 'insert'])->name('titles.insert');
-    Route::get('/test', [\App\Http\Controllers\TitlesController::class, 'test']);
 });
 
 Route::prefix('lists')->middleware(['auth'])->group(function () {
