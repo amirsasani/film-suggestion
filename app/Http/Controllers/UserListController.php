@@ -62,21 +62,26 @@ class UserListController extends Controller
         $list_titles_average_rating = $list_titles->avg('rate');
         $suggested_titles = $suggested_titles->where('rate', '>=', $list_titles_average_rating);
 
-        $list_titles_median_end_year = $list_titles->pluck('start_year')->sort()->toArray();
-        $list_titles_median_end_year = $this->remove_outliers($list_titles_median_end_year);
-        $list_titles_median_end_year = collect($list_titles_median_end_year);
-        $list_titles_median_end_year = $list_titles_median_end_year->median();
-        $list_titles_median_end_year = floor($list_titles_median_end_year);
-        $list_titles_median_end_year = intval($list_titles_median_end_year);
-        $suggested_titles = $suggested_titles->where('start_year', '>=', $list_titles_median_end_year);
+        $list_titles_median_start_year = $list_titles->pluck('start_year')->sort()->toArray();
+        $list_titles_median_start_year = $this->remove_outliers($list_titles_median_start_year);
+        $list_titles_median_start_year = collect($list_titles_median_start_year);
+        $list_titles_median_start_year = $list_titles_median_start_year->min();
+        $list_titles_median_start_year = floor($list_titles_median_start_year);
+        $list_titles_median_start_year = intval($list_titles_median_start_year);
+
 
         $list_titles_median_end_year = $list_titles->pluck('end_year')->sort()->toArray();
         $list_titles_median_end_year = $this->remove_outliers($list_titles_median_end_year);
         $list_titles_median_end_year = collect($list_titles_median_end_year);
-        $list_titles_median_end_year = $list_titles_median_end_year->median();
+        $list_titles_median_end_year = $list_titles_median_end_year->max();
         $list_titles_median_end_year = floor($list_titles_median_end_year);
         $list_titles_median_end_year = intval($list_titles_median_end_year);
-        $suggested_titles = $suggested_titles->where('end_year', '<=', $list_titles_median_end_year);
+
+//        $suggested_titles = $suggested_titles->whereIn('start_year', [$list_titles_median_start_year, $list_titles_median_end_year]);
+
+        $list_titles_mode_types = $list_titles->mode('type');
+        $suggested_titles = $suggested_titles->whereIn('type', $list_titles_mode_types);
+
 
         $suggested_titles = $suggested_titles
             ->whereNotIn('id', $list_titles_ids)
