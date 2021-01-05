@@ -3,14 +3,17 @@
 @section('content')
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-8 my-2">
+            <div class="col-md-12 my-2">
 
                 @include('partials.errors')
 
                 <div class="card">
                     <div class="card-header">{{$list->title}}</div>
                     <div class="card-body">
-                        <p>{{$list->description}}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p>{{$list->description}}</p>
+                            <a href="{{route('user-lists.suggest', $list)}}" class="btn btn-success">Suggest me titles</a>
+                        </div>
                         <hr>
                         <div class="row">
                             <div class="table-responsive">
@@ -46,7 +49,7 @@
                                         <td>{{$title->getYear()}}</td>
                                         <td>
                                             @foreach($title->genres as $genre)
-                                                <span class="badge badge-success">{{$genre->title}}</span>
+                                                <span class="badge badge-secondary">{{$genre->title}}</span>
                                             @endforeach
                                         </td>
                                         <td>
@@ -76,49 +79,6 @@
                     </div>
                 </div>
 
-            </div>
-
-            <div class="col-md-4 my-2">
-                <div class="card">
-                    <div class="card-header">Add titles to <b>"<i>{{$list->title}}</i>"</b></div>
-                    <div class="card-body p-0">
-                        <ul class="list-group">
-                            @foreach($titles_to_add as $title)
-                                <form action="{{route('user-list.titles.add', [$list, $title])}}" method="post">
-                                    @csrf
-                                    <li class="list-group-item">
-                                        <a href="{{$title->imdbLink()}}" class="w-75 align-self-center">
-                                            <img class="card-img-top" src="{{$title->thumb}}" alt="{{$title->title}}">
-                                        </a>
-                                        <ul>
-                                            <li>
-                                                <span>Title:</span>
-                                                <span>{{$title->title}}</span>
-                                            </li>
-                                            <li>
-                                                <span>Genre:</span>
-                                                <span>
-                                                    @foreach($title->genres as $genre)
-                                                        <span class="badge badge-dark">{{$genre->title}}</span>
-                                                    @endforeach
-                                                </span>
-                                            </li>
-                                            <li><span>Year</span> : <span>{{$title->getYear()}}</span></li>
-                                            <li><span>Rate</span> : <span><b>{{$title->rate}}</b></span></li>
-                                            <li>
-                                                <span>Type</span> :
-                                                <span class="text-capitalize">
-                                                    {{$title->type}}
-                                                </span>
-                                            </li>
-                                        </ul>
-                                        <input type="submit" value="Add" class="btn btn-outline-success w-100 mt-3">
-                                    </li>
-                                </form>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
             </div>
 
         </div>
