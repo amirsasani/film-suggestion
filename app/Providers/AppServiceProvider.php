@@ -26,9 +26,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->environment('production')) {
+            dd('test');
             URL::forceScheme('https');
         }
-        
+
         Paginator::useBootstrap();
     }
 }
