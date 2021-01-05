@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('imdb:populate')
             ->timezone('Asia/Tehran')
-            ->dailyAt('18:37');
+            ->everyTenMinutes();
     }
 
     /**
