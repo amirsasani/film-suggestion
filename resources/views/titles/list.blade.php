@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <div class="row justify-content-center">
-            <p>listing <b>{{$titles->count()}}</b> of <b>{{$titles->total()}}</b> titles</p>
+            <p>listing <b>{{number_format($titles->count())}}</b> of <b>{{number_format($titles->total())}}</b> titles</p>
             <div class="col-md-12 my-2">
 
                 @include('partials.errors')
