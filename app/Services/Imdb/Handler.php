@@ -10,6 +10,7 @@ use Cache\Adapter\Predis\PredisCachePool;
 use Illuminate\Support\Facades\Redis;
 use Imdb\Config;
 use Imdb\Title as ImdbTitle;
+use Symfony\Component\Cache\Psr16Cache;
 
 class Handler
 {
@@ -24,6 +25,7 @@ class Handler
 
         try {
             $pool = app('cache.psr6');
+            $pool = new Psr16Cache($pool);
         } catch (\Exception $e) {
             $pool = null;
         }
