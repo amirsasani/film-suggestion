@@ -23,8 +23,7 @@ class Handler
         $pool = null;
 
         try {
-            $client = Redis::connection('cache')->client();
-            $pool = new PredisCachePool($client);
+            $pool = app('cache.psr6');
         } catch (\Exception $e) {
             $pool = null;
         }
