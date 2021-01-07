@@ -17,6 +17,11 @@ Auth::routes();
 Route::get('/', [\App\Http\Controllers\TitlesController::class, 'index'])->name('home');
 Route::get('/test', [\App\Http\Controllers\TitlesController::class, 'test']);
 
+
+Route::get('/t', function () {
+    return \App\Services\Imdb\Handler::insertTitle(335266);
+});
+
 Route::prefix('titles')->group(function () {
     Route::get('/', [\App\Http\Controllers\TitlesController::class, 'index'])->name('titles.index');
     Route::get('/new', [\App\Http\Controllers\TitlesController::class, 'insertForm'])->name('titles.insert.form');
@@ -28,7 +33,10 @@ Route::prefix('lists')->middleware(['auth'])->group(function () {
     Route::get('/new', [\App\Http\Controllers\UserListController::class, 'insertForm'])->name('user-lists.insert.form');
     Route::post('/new', [\App\Http\Controllers\UserListController::class, 'insert'])->name('user-lists.insert');
     Route::get('/{list}', [\App\Http\Controllers\UserListController::class, 'show'])->name('user-lists.show');
-    Route::get('/{list}/suggest', [\App\Http\Controllers\UserListController::class, 'suggest'])->name('user-lists.suggest');
-    Route::post('/{list}/add/{title}', [\App\Http\Controllers\UserListController::class, 'addTitleToList'])->name('user-list.titles.add');
-    Route::post('/{list}/remove/{title}', [\App\Http\Controllers\UserListController::class, 'removeTitleFromList'])->name('user-list.titles.remove');
+    Route::get('/{list}/suggest',
+        [\App\Http\Controllers\UserListController::class, 'suggest'])->name('user-lists.suggest');
+    Route::post('/{list}/add/{title}',
+        [\App\Http\Controllers\UserListController::class, 'addTitleToList'])->name('user-list.titles.add');
+    Route::post('/{list}/remove/{title}',
+        [\App\Http\Controllers\UserListController::class, 'removeTitleFromList'])->name('user-list.titles.remove');
 });

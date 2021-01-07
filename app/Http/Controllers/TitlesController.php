@@ -103,9 +103,8 @@ class TitlesController extends Controller
 
         DB::beginTransaction();
         try {
-            $imdb = new \Imdb\Title($request->get('imdb_id'));
 
-            $title = Handler::insertTitle($imdb);
+            $title = Handler::insertTitle($request->get('imdb_id'));
 
             DB::commit();
         } catch (\Exception $exception) {
@@ -117,8 +116,6 @@ class TitlesController extends Controller
 
     public function test()
     {
-
-        Artisan::call('imdb:populate');
 
 //        $id = 'tt6492236';
 //        $imdb = new \Imdb\Title($id);

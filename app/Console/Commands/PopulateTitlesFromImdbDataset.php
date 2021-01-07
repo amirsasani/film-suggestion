@@ -53,8 +53,7 @@ class PopulateTitlesFromImdbDataset extends Command
                 $row[] = $i;
                 $id = $row[0];
 
-                $imdb = new \Imdb\Title($id);
-                $title = Handler::insertTitle($imdb);
+                $title = Handler::insertTitle($id);
 
                 $log_msg = sprintf('title #%s added', $title->id);
                 $this->info($log_msg);
