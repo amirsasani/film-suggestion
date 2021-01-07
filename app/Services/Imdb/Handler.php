@@ -19,7 +19,6 @@ class Handler
         $config = new Config();
         $config->language = 'en';
 
-        $config = null;
         $logger = null;
         $pool = null;
 
@@ -31,7 +30,6 @@ class Handler
         }
 
         $imdb = new ImdbTitle($imdb_id, $config, $logger, $pool);
-
 
         $imdb_id = $imdb->imdbid();
 
