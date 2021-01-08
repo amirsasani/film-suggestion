@@ -25,12 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(function () {
-            Http::get(route('imdb-populate'));
-        })->everyTenMinutes();
-//            ->timezone('Asia/Tehran')
-//            ->fridays()
-//            ->at('06:00');
+        //
     }
 
     /**
