@@ -125,9 +125,13 @@ class TitlesController extends Controller
         $dataset_file_path = storage_path('app/');
         $dataset_file_path .= $dataset_file_name;
 
-        $dataset_file_last_downloaded_time = Carbon::createFromTimestamp($disk->lastModified($dataset_file_name));
+        $should_download_dataset = true;
+        if ($disk->exists($dataset_file_name)) {
+            $dataset_file_last_downloaded_time = Carbon::createFromTimestamp($disk->lastModified($dataset_file_name));
+            $should_download_dataset = $dataset_file_last_downloaded_time->subHours(23) >= Carbon::now();
+        }
 
-        if ($dataset_file_last_downloaded_time->subHours(23) >= Carbon::now()) {
+        if ($should_download_dataset) {
             $contents = file_get_contents("https://datasets.imdbws.com/".$dataset_file_name);
             $disk->put($dataset_file_name, $contents);
         }
