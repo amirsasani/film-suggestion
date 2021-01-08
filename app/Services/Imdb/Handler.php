@@ -19,6 +19,7 @@ class Handler
 
         $config = new Config();
         $config->language = 'en';
+        $config->cache_expire = 86400;
 
         $logger = null;
         $pool = null;
