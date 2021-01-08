@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Genre;
 use App\Models\Title;
 use App\Services\Imdb\Handler;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use function GuzzleHttp\Promise\all;
 
 class TitlesController extends Controller
@@ -114,47 +117,35 @@ class TitlesController extends Controller
         return redirect()->route('titles.index');
     }
 
-    public function test()
+    public function imdbDatasetPopulate(Request $request)
     {
+        $disk = Storage::disk('local');
 
-//        $id = 'tt6492236';
-//        $imdb = new \Imdb\Title($id);
-//        dd($imdb->yearspan());
+        $dataset_file_name = "title.ratings.tsv.gz";
+        $dataset_file_path = storage_path('app/');
+        $dataset_file_path .= $dataset_file_name;
 
-//        $ids = [
-//            'tt6266538',
-//            'tt0357413',
-//            'tt0493464',
-//            'tt4364194',
-//            'tt5057054',
-//            'tt2712612',
-//            'tt5990096',
-//            'tt6492236',
-//            'tt3597790',
-//            'tt7203552',
-//            'tt3609352',
-//            'tt7826376',
-//            'tt12597800',
-//            'tt6311972',
-//            'tt7068580',
-//            'tt1475582',
-//            'tt2442560',
-//            'tt0487831',
-//            'tt5425186',
-//            'tt1492966',
-//            'tt2467372',
-//            'tt0098904',
-//            'tt2861424',
-//            'tt0898266',
-//            'tt1442437',
-//            'tt0367279',
-//            'tt1266020',
-//        ];
-//
-//        foreach ($ids as $id) {
-//            $imdb = new \Imdb\Title($id);
-//
-//            $title = Handler::insertTitle($imdb);
-//        }
+        $dataset_file_last_downloaded_time = Carbon::createFromTimestamp($disk->lastModified($dataset_file_name));
+
+        if ($dataset_file_last_downloaded_time->subHours(23) >= Carbon::now()) {
+            $contents = file_get_contents("https://datasets.imdbws.com/".$dataset_file_name);
+            $disk->put($dataset_file_name, $contents);
+        }
+
+        $input = gzopen($dataset_file_path, 'r');
+
+        $i = 0;
+        while ($row = fgetcsv($input, 0, "\t")) {
+            if ($i > 0) {
+                $row[] = $i;
+                $id = $row[0];
+
+                $title = Handler::insertTitle($id);
+
+                $log_msg = sprintf('title #%s added', $title->id);
+                Log::info($log_msg);
+            }
+            $i++;
+        }
     }
 }

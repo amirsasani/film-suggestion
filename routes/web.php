@@ -15,12 +15,6 @@ use Illuminate\Support\Facades\Route;
 Auth::routes();
 
 Route::get('/', [\App\Http\Controllers\TitlesController::class, 'index'])->name('home');
-Route::get('/test', [\App\Http\Controllers\TitlesController::class, 'test']);
-
-
-Route::get('/t', function () {
-    return \App\Services\Imdb\Handler::insertTitle(335266);
-});
 
 Route::prefix('titles')->group(function () {
     Route::get('/', [\App\Http\Controllers\TitlesController::class, 'index'])->name('titles.index');

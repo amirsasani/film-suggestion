@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Http;
 
 class Kernel extends ConsoleKernel
 {
@@ -24,10 +25,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('imdb:populate')
-            ->timezone('Asia/Tehran')
-            ->fridays()
-            ->at('06:00');
+        $schedule->call(function () {
+            Http::get(route('imdb-populate'));
+        })->everyTenMinutes();
+//            ->timezone('Asia/Tehran')
+//            ->fridays()
+//            ->at('06:00');
     }
 
     /**
