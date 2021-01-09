@@ -3,7 +3,8 @@
 @section('content')
     <div class="container">
         <div class="row justify-content-center">
-            <p>listing <b>{{number_format($titles->count())}}</b> of <b>{{number_format($titles->total())}}</b> titles</p>
+            <p>listing <b>{{number_format($titles->count())}}</b> of <b>{{number_format($titles->total())}}</b> titles
+            </p>
             <div class="col-md-12 my-2">
 
                 @include('partials.errors')
@@ -22,9 +23,11 @@
                         </div>
                         <div class="card-body pt-2">
                             <p>
-                                @foreach($title->genres as $genre)
+                                @forelse($title->genres as $genre)
                                     <span class="badge badge-dark">{{$genre->title}}</span>
-                                @endforeach
+                                @empty
+                                    <span class="badge badge-dark invisible">No Genres</span>
+                                @endforelse
                             </p>
 
                             <ul>
@@ -45,7 +48,9 @@
                                     </button>
                                     <div class="dropdown-menu w-100  p-0" aria-labelledby="addToListDropdownButton">
                                         @foreach($user_lists as $list)
-                                            <form class="form-inline dropdown-item p-0" action="{{route('user-list.titles.add', [$list, $title])}}" method="post">
+                                            <form class="form-inline dropdown-item p-0"
+                                                  action="{{route('user-list.titles.add', [$list, $title])}}"
+                                                  method="post">
                                                 @csrf
                                                 <button type="submit" class="btn btn-link w-100">
                                                     {{$list->title}}
