@@ -146,8 +146,6 @@ class TitlesController extends Controller
 
                 $title = Handler::insertTitle($id);
 
-                $log_msg = sprintf('title #%s added', $title->id);
-                Log::info($log_msg);
             }
             $i++;
         }
