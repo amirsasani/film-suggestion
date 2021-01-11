@@ -15,13 +15,14 @@ class CreateTitlesTable extends Migration
         Schema::create('titles', function (Blueprint $table) {
             $table->id();
             $table->string('imdb_id')->unique();
-            $table->string('title');
-            $table->string('thumb');
-            $table->string('poster');
-            $table->float('rate');
-            $table->string('start_year');
+            $table->string('title')->nullable();
+            $table->string('thumb')->nullable();
+            $table->string('poster')->nullable();
+            $table->float('rate')->nullable();
+            $table->string('start_year')->nullable();
             $table->string('end_year')->nullable();
-            $table->enum('type', ['movie', 'series']);
+            $table->enum('type', ['movie', 'series'])->nullable();
+            $table->timestamp('last_populated_at')->default('now')->nullable();
             $table->timestamps();
         });
     }
