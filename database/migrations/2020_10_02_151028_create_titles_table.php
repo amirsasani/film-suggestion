@@ -22,7 +22,7 @@ class CreateTitlesTable extends Migration
             $table->string('start_year')->nullable();
             $table->string('end_year')->nullable();
             $table->enum('type', ['movie', 'series'])->nullable();
-            $table->timestamp('last_populated_at')->useCurrent()->nullable();
+            $table->timestamp('populated_at')->useCurrent()->nullable();
             $table->timestamps();
         });
     }
