@@ -6,8 +6,6 @@ namespace App\Services\Imdb;
 
 use App\Models\Genre;
 use App\Models\Title;
-use Cache\Adapter\Predis\PredisCachePool;
-use Illuminate\Support\Facades\Redis;
 use Imdb\Config;
 use Imdb\Title as ImdbTitle;
 use Symfony\Component\Cache\Psr16Cache;

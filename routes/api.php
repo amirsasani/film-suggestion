@@ -18,4 +18,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('imdb/dataset/populate', [\App\Http\Controllers\TitlesController::class, 'imdbDatasetPopulate'])->name('imdb-populate');
+Route::prefix('/imdb/dataset')->group(function (){
+    Route::get('/download', [\App\Http\Controllers\ImdbPopulateController::class, 'download'])->name('dataset.download');
+    Route::get('/populate', [\App\Http\Controllers\ImdbPopulateController::class, 'populate'])->name('dataset.populate');
+});
+
