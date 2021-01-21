@@ -6,10 +6,7 @@ use App\Imports\TitlesImport;
 use App\Models\Title;
 use App\Services\Imdb\Handler;
 use Carbon\Carbon;
-use Exception;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Excel;
 
 class ImdbPopulateController extends Controller
 {
@@ -72,5 +69,20 @@ class ImdbPopulateController extends Controller
         $titles_importer->queue($out_file_name, 'local');
 
         return response()->json('queued');
+    }
+
+    public function update()
+    {
+        $titles = Title::noData();
+        if (empty($titles->count())) {
+            $titles = Title::needUpdate();
+        }
+
+
+        $titles->take(100)->each(function (Title $title) {
+            Handler::insertTitle($title->imdb_id);
+        });
+
+        return response()->json('updated');
     }
 }

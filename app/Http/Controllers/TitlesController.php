@@ -27,7 +27,7 @@ class TitlesController extends Controller
             'genres' => ['exists:genres,id', 'nullable'],
         ]);
 
-        $titles = Title::with(['genres']);
+        $titles = Title::with(['genres'])->toShow();
 
         $genres = $this->prepareGenresForIndex();
 

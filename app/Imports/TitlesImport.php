@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Jobs\UpdateTitle;
 use App\Models\Title;
 use App\Services\Imdb\Handler;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,14 +27,16 @@ class TitlesImport implements ToModel, WithHeadingRow, WithChunkReading, ShouldQ
         $row = explode("\t", $row);
         $imdb_id = $row[0];
 
-        $title = Handler::insertTitle($imdb_id);
+        $title = Title::updateOrCreate(compact('imdb_id'));
+
+        UpdateTitle::dispatch($title);
 
         return $title;
     }
 
     public function chunkSize(): int
     {
-        return 10;
+        return 4000;
     }
 
 }

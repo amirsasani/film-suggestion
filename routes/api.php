@@ -21,5 +21,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::prefix('/imdb/dataset')->group(function (){
     Route::get('/download', [\App\Http\Controllers\ImdbPopulateController::class, 'download'])->name('dataset.download');
     Route::get('/populate', [\App\Http\Controllers\ImdbPopulateController::class, 'populate'])->name('dataset.populate');
+    Route::get('/update', [\App\Http\Controllers\ImdbPopulateController::class, 'update'])->name('dataset.update');
 });
 
