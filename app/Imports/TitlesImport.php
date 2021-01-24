@@ -36,7 +36,7 @@ class TitlesImport implements ToModel, WithHeadingRow, WithChunkReading, ShouldQ
 
     public function chunkSize(): int
     {
-        return 1000;
+        return 500;
     }
 
 }
