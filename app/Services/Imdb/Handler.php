@@ -22,26 +22,42 @@ class Handler
         $logger = null;
         $pool = null;
 
-        try {
+        try
+        {
             $pool = app('cache.psr6');
             $pool = new Psr16Cache($pool);
-        } catch (\Exception $e) {
+        } catch (\Exception $e)
+        {
             $pool = null;
         }
 
         $imdb = new ImdbTitle($imdb_id, $config, $logger, $pool);
 
+        $movieType = $imdb->movietype();
+        if (stripos($movieType, 'episode') != false)
+        {
+            $episodeDetails = $imdb->get_episode_details();
+            $seriesImdbId = $episodeDetails['imdbid'];
+            return Title::where('imdb_id', '=', $seriesImdbId)->first();
+        }
+
         $imdb_id = $imdb->imdbid();
 
         $thumb = $imdb->photo();
         $poster = $imdb->photo(false);
-        $title = !empty($imdb->orig_title()) ? $imdb->orig_title() : $imdb->title();
+        $title = $imdb->title();
         $rate = $imdb->rating();
         $start_year = $imdb->yearspan()['start'];
         $end_year = $imdb->yearspan()['end'] != 0 ? $imdb->yearspan()['end'] : null;
         $type = $imdb->is_serial() ? 'series' : 'movie';
 
-        $title = Title::firstOrCreate(compact('imdb_id'), compact(
+        if (!empty($imdb->orig_title()))
+        {
+            $title = $imdb->orig_title();
+        }
+
+        $title = Title::firstOrCreate(compact(
+            'imdb_id',
             'thumb',
             'poster',
             'title',
@@ -52,7 +68,8 @@ class Handler
         ));
 
         $genres = [];
-        foreach ($imdb->genres() as $imdb_genre) {
+        foreach ($imdb->genres() as $imdb_genre)
+        {
             $genre = Genre::firstOrCreate(['title' => $imdb_genre]);
             $genres[] = $genre->id;
         }
