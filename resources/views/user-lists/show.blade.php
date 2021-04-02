@@ -12,7 +12,15 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <p>{{$list->description}}</p>
-                            <a href="{{route('user-lists.suggest', $list)}}" class="btn btn-success">Suggest me titles</a>
+                            @if(!$list->titles->isEmpty())
+                                <form action="{{route('suggest')}}" method="post">
+                                    @csrf
+                                    <input type="hidden" name="user_list" value="{{$list->id}}">
+                                    <button type="submit" class="btn btn-outline-success btn-block">
+                                        Suggest related titles
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                         <hr>
                         <div class="row">
@@ -41,28 +49,32 @@
                                     <tbody>
 
                                     @forelse($list->titles as $title)
-                                    <tr>
-                                        <th scope="row">
-                                            <img class="w-50" src="{{$title->thumb}}" alt="{{$title->title}}">
-                                        </th>
-                                        <td>{{$title->title}}</td>
-                                        <td>{{$title->getYear()}}</td>
-                                        <td>
-                                            @foreach($title->genres as $genre)
-                                                <span class="badge badge-secondary">{{$genre->title}}</span>
-                                            @endforeach
-                                        </td>
-                                        <td>
-                                            <span class="text-capitalize">{{$title->type}}</span>
-                                        </td>
-                                        <td>{{$title->rate}}</td>
-                                        <td>
-                                            <form class="form-inline" action="{{route('user-list.titles.remove', [$list, $title])}}" method="post">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Remove from list</button>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                            <th scope="row">
+                                                <img class="w-50" src="{{$title->thumb}}" alt="{{$title->title}}">
+                                            </th>
+                                            <td>{{$title->title}}</td>
+                                            <td>{{$title->getYear()}}</td>
+                                            <td>
+                                                @foreach($title->genres as $genre)
+                                                    <span class="badge badge-secondary">{{$genre->title}}</span>
+                                                @endforeach
+                                            </td>
+                                            <td>
+                                                <span class="text-capitalize">{{$title->type}}</span>
+                                            </td>
+                                            <td>{{$title->rate}}</td>
+                                            <td>
+                                                <form class="form-inline"
+                                                      action="{{route('user-list.titles.remove', [$list, $title])}}"
+                                                      method="post">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove
+                                                        from list
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
 
                                     @empty
                                         <tr>

@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3",
+        "php": "7.4 - 8",
         "ext-zlib": "*",
         "cache/predis-adapter": "^1.1",
         "doctrine/dbal": "^3.0",

@@ -4,8 +4,10 @@
 namespace App\Services\Imdb;
 
 
+use App\Jobs\UpdateTitle;
 use App\Models\Genre;
 use App\Models\Title;
+use Illuminate\Support\Collection;
 use Imdb\Config;
 use Imdb\Title as ImdbTitle;
 use Symfony\Component\Cache\Psr16Cache;
@@ -14,7 +16,6 @@ class Handler
 {
     public static function insertTitle(string $imdb_id)
     {
-
         $config = new Config();
         $config->language = 'en';
         $config->cache_expire = 86400;
@@ -38,7 +39,7 @@ class Handler
         {
             $episodeDetails = $imdb->get_episode_details();
             $seriesImdbId = $episodeDetails['imdbid'];
-            return Title::where('imdb_id', '=', $seriesImdbId)->first();
+            return Handler::insertTitle($seriesImdbId);
         }
 
         $imdb_id = $imdb->imdbid();
@@ -51,13 +52,14 @@ class Handler
         $end_year = $imdb->yearspan()['end'] != 0 ? $imdb->yearspan()['end'] : null;
         $type = $imdb->is_serial() ? 'series' : 'movie';
 
-        if (!empty($imdb->orig_title()))
-        {
-            $title = $imdb->orig_title();
+
+        $imdb_id = Handler::prepareImdbId($imdb_id);
+
+        if(empty($rate)){
+            $rate = 0;
         }
 
-        $title = Title::firstOrCreate(compact(
-            'imdb_id',
+        $_title = Title::updateOrCreate(compact('imdb_id'), compact(
             'thumb',
             'poster',
             'title',
@@ -73,8 +75,23 @@ class Handler
             $genre = Genre::firstOrCreate(['title' => $imdb_genre]);
             $genres[] = $genre->id;
         }
-        $title->genres()->sync($genres);
+        $_title->genres()->sync($genres);
 
-        return $title;
+        $recommendations = [];
+        foreach ($imdb->movie_recommendations() as $suggestion)
+        {
+            $imdb_id = Handler::prepareImdbId($suggestion['imdbid']);
+            $title = Title::updateOrCreate(compact('imdb_id'));
+
+            $recommendations[] = $title->id;
+        }
+        $_title->recommendations()->sync($recommendations);
+
+        return $_title;
+    }
+
+    public static function prepareImdbId($imdb_id)
+    {
+        return sprintf('%020d', $imdb_id);
     }
 }

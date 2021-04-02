@@ -1,0 +1,6 @@
+{
+    "app": "film-suggestion",
+    "cron": [
+        "* * * * * cd /var/www/html && php artisan queue:work --tries=2 >> /dev/null 2>&1"
+    ]
+}

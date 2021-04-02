@@ -38,8 +38,16 @@
 
                             @auth
                                 <hr>
+                                <form action="{{route('suggest')}}" method="post">
+                                    @csrf
+                                    <input type="hidden" name="title" value="{{$title->id}}">
+                                    <button type="submit" class="btn btn-outline-success btn-block">
+                                        Suggest related titles
+                                    </button>
+                                </form>
+                                <hr>
                                 <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle w-100" type="button"
+                                    <button class="btn btn-secondary dropdown-toggle btn-block" type="button"
                                             id="addToListDropdownButton"
                                             data-toggle="dropdown"
                                             aria-haspopup="true"

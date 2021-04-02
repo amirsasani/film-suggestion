@@ -17,7 +17,9 @@
                             <div class="form-group">
                                 <label for="imdb_id">IMDB ID</label>
                                 <input type="text" class="form-control" id="imdb_id" name="imdb_id" placeholder="Enter IMDB ID">
-                                <small id="emailHelp" class="form-text text-muted">https://www.imdb.com/title/<code>tt0108778</code>/</small>
+                                <small id="emailHelp" class="form-text text-muted">
+                                    https://www.imdb.com/title/tt<span class="text-danger">0108778</span>/
+                                </small>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Add</button>

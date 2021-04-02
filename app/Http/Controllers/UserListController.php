@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\UpdateTitle;
 use App\Models\Title;
 use App\Models\UserList;
-use Illuminate\Database\Eloquent\Builder;
+use App\Notifications\TitlesSuggestions;
 use Illuminate\Http\Request;
 
 class UserListController extends Controller
@@ -25,7 +26,7 @@ class UserListController extends Controller
     {
         $request->validate([
             'title' => ['required'],
-            'description' => ['required']
+            'description' => ['nullable']
         ]);
 
         $list = auth()->user()->lists()->create($request->all());
@@ -40,82 +41,50 @@ class UserListController extends Controller
         return view('user-lists.show', compact('list'));
     }
 
-    public function suggest(UserList $list)
+    public function suggest(Request $request)
     {
-        $list_titles = $list->titles;
-        $list_titles_ids = $list_titles->pluck('id')->toArray();
+        $request->validate([
+            'user_list' => ['required_without_all:title'],
+            'title' => ['required_without_all:user_list'],
+            'remove_existing_titles' => ['required_if:user_list,true'],
+        ]);
 
-        $suggested_titles = Title::with('genres');
-
-        try {
-
-            $list_titles_genres = $list_titles
-                ->pluck('genres.*.id')
-                ->flatten()
-                ->countBy()
-                ->sortDesc()
-                ->take(5)
-                ->keys();
-
-            $suggested_titles = Title::with('genres')->whereHas('genres',
-                function (Builder $builder) use ($list_titles_genres) {
-                    $builder->whereIn('id', $list_titles_genres);
-                });
-
-            $list_titles_average_rating = $list_titles->avg('rate');
-            $list_titles_average_rating = floor($list_titles_average_rating);
-            $suggested_titles = $suggested_titles->where('rate', '>=', $list_titles_average_rating);
-
-            $list_titles_median_start_year = $list_titles->pluck('start_year')->sort()->toArray();
-            $list_titles_median_start_year = $this->remove_outliers($list_titles_median_start_year);
-            $list_titles_median_start_year = collect($list_titles_median_start_year);
-            $list_titles_median_start_year = $list_titles_median_start_year->min();
-            $list_titles_median_start_year = floor($list_titles_median_start_year);
-            $list_titles_median_start_year = intval($list_titles_median_start_year);
-
-
-            $list_titles_median_end_year = $list_titles->pluck('end_year')->sort()->toArray();
-            $list_titles_median_end_year = $this->remove_outliers($list_titles_median_end_year);
-            $list_titles_median_end_year = collect($list_titles_median_end_year);
-            $list_titles_median_end_year = $list_titles_median_end_year->max();
-            $list_titles_median_end_year = floor($list_titles_median_end_year);
-            $list_titles_median_end_year = intval($list_titles_median_end_year);
-
-            $year_range = [$list_titles_median_start_year, $list_titles_median_end_year];
-            $suggested_titles = $suggested_titles->whereBetween('start_year', $year_range);
-            $suggested_titles = $suggested_titles->whereBetween('end_year', $year_range);
-
-            $list_titles_mode_types = $list_titles->mode('type');
-            $suggested_titles = $suggested_titles->whereIn('type', $list_titles_mode_types);
-
-        } catch (\Exception $e) {
-
+        $titles = collect();
+        if ($request->has('title'))
+        {
+            $titles->add(Title::find($request->get('title')));
+        }
+        if ($request->has('user_list'))
+        {
+            $userList = UserList::find($request->get('user_list'));
+            $titles = $userList->titles;
         }
 
-        $suggested_titles = $suggested_titles
-            ->whereNotIn('id', $list_titles_ids)
-            ->take(24)
-            ->paginate(6);
 
-        return view('user-lists.suggestions', ['titles' => $suggested_titles, 'list' => $list]);
-    }
+        $suggested_titles = collect();
+        $titles->each(function (Title $title) use (&$suggested_titles)
+        {
+            $suggested_titles = $suggested_titles->merge($title->recommendations);
+        });
+        $suggested_titles = $suggested_titles->unique('imdb_id')->values();
 
-    function remove_outliers($dataset, $magnitude = 1)
-    {
+        $suggested_titles->each(function (Title $title)
+        {
+            UpdateTitle::dispatch($title);
+        });
 
-        $count = count($dataset);
-        $mean = array_sum($dataset) / $count; // Calculate the mean
-        $deviation = sqrt(array_sum(array_map([$this, 'sd_square'], $dataset, array_fill(0, $count,
-                    $mean))) / $count) * $magnitude; // Calculate standard deviation and times by magnitude
+        $suggested_titles = Title::find(
+            $suggested_titles
+                ->pluck('id')
+                ->values()
+                ->toArray()
+        );
 
-        return array_filter($dataset, function ($x) use ($mean, $deviation) {
-            return ($x <= $mean + $deviation && $x >= $mean - $deviation);
-        }); // Return filtered array of values that lie within $mean +- $deviation.
-    }
+        $request
+            ->user()
+            ->notify(new TitlesSuggestions($suggested_titles));
 
-    function sd_square($x, $mean)
-    {
-        return pow($x - $mean, 2);
+        return back()->with('success', 'We will notify you the suggestions!');
     }
 
     public function addTitleToList(Request $request, UserList $list, Title $title)

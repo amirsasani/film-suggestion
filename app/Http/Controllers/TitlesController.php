@@ -18,7 +18,6 @@ class TitlesController extends Controller
 {
     public function index(Request $request)
     {
-
         $request->validate([
             'start_year' => ['digits:4', 'nullable'],
             'end_year' => ['digits:4', 'nullable'],
@@ -27,14 +26,16 @@ class TitlesController extends Controller
             'genres' => ['exists:genres,id', 'nullable'],
         ]);
 
-        $titles = Title::with(['genres'])->toShow();
+        $titles = Title::with(['genres', 'recommendations'])->toShow();
 
         $genres = $this->prepareGenresForIndex();
 
-        $start_years = $titles->pluck('start_year')->unique()->sortDesc()->reject(function ($year) {
+        $start_years = $titles->pluck('start_year')->unique()->sortDesc()->reject(function ($year)
+        {
             return empty($year);
         });
-        $end_years = $titles->pluck('end_year')->unique()->sortDesc()->reject(function ($year) {
+        $end_years = $titles->pluck('end_year')->unique()->sortDesc()->reject(function ($year)
+        {
             return empty($year);
         });
 
@@ -44,7 +45,8 @@ class TitlesController extends Controller
         $titles = $titles->paginate(12);
 
         $user_lists = [];
-        if (auth()->user()) {
+        if (auth()->user())
+        {
             $user_lists = auth()->user()->lists;
         }
 
@@ -53,28 +55,35 @@ class TitlesController extends Controller
 
     private function filterTitles(Request $request, Builder $titles, &$selected)
     {
-        if ($request->query('search')) {
+        if ($request->query('search'))
+        {
             $titles = $titles->where('title', 'like', '%'.$request->query('search').'%');
             $selected['search'] = $request->query('search');
         }
-        if ($request->query('start_year')) {
+        if ($request->query('start_year'))
+        {
             $titles = $titles->where('start_year', '>=', $request->query('start_year'));
             $selected['start_year'] = $request->query('start_year');
         }
-        if ($request->query('end_year')) {
+        if ($request->query('end_year'))
+        {
             $titles = $titles->where('end_year', '<=', $request->query('end_year'));
             $selected['end_year'] = $request->query('end_year');
         }
-        if ($request->query('type')) {
+        if ($request->query('type'))
+        {
             $titles = $titles->where('type', '=', $request->query('type'));
             $selected['type'] = $request->query('type');
         }
-        if ($request->query('rate')) {
+        if ($request->query('rate'))
+        {
             $titles = $titles->where('rate', '>=', $request->query('rate'));
             $selected['rate'] = $request->query('rate');
         }
-        if ($request->query('genres')) {
-            $titles = $titles->whereHas('genres', function (Builder $query) use ($request) {
+        if ($request->query('genres'))
+        {
+            $titles = $titles->whereHas('genres', function (Builder $query) use ($request)
+            {
                 $query->where('id', '=', $request->query('genres'));
             });
             $selected['genre'] = $request->query('genres');
@@ -87,7 +96,8 @@ class TitlesController extends Controller
     {
         $output = [];
         $genres = Genre::all();
-        foreach ($genres as $genre) {
+        foreach ($genres as $genre)
+        {
             $output[$genre->id] = $genre->title;
         }
         return $output;
@@ -104,13 +114,24 @@ class TitlesController extends Controller
             'imdb_id' => ['required']
         ]);
 
-        DB::beginTransaction();
-        try {
+        $pattern = "/\d+/";
+        $imdb_id = $request->get('imdb_id');
 
-            $title = Handler::insertTitle($request->get('imdb_id'));
+        preg_match($pattern, $imdb_id, $matches);
+        if (!empty($matches))
+        {
+            $imdb_id = $matches[0];
+        }
+
+        DB::beginTransaction();
+        try
+        {
+
+            $title = Handler::insertTitle($imdb_id);
 
             DB::commit();
-        } catch (\Exception $exception) {
+        } catch (\Exception $exception)
+        {
             DB::rollBack();
         }
 

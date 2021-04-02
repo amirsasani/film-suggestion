@@ -36,9 +36,13 @@ class Title extends Model
 
     public function getYear(): string
     {
-        return $this->isSeries()
-            ? sprintf('%s - %s', $this->start_year, $this->end_year ?? 'present')
-            : $this->start_year;
+        $start_year = $this->start_year ?? '';
+        $end_year = $this->end_year ?? 'present';
+
+        if($this->isSeries()){
+            return sprintf('%s - %s', $start_year, $end_year);
+        }
+        return $start_year;
     }
 
     public function getThumbAttribute($thumb): string
@@ -55,6 +59,16 @@ class Title extends Model
     public function lists(): BelongsToMany
     {
         return $this->belongsToMany(UserList::class, 'title_user-list');
+    }
+
+    public function recommendations(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Title::class,
+            'recommendations',
+            'recommendation_id',
+            'title_id',
+        )->withTimestamps();
     }
 
     public function scopeNoData(Builder $query)
