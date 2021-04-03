@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class UserListController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['verified']);
+    }
+
     public function index()
     {
         $lists = auth()->user()->lists()->paginate(10);
@@ -25,7 +30,7 @@ class UserListController extends Controller
     public function insert(Request $request)
     {
         $request->validate([
-            'title' => ['required'],
+            'title'       => ['required'],
             'description' => ['nullable']
         ]);
 
@@ -44,32 +49,28 @@ class UserListController extends Controller
     public function suggest(Request $request)
     {
         $request->validate([
-            'user_list' => ['required_without_all:title'],
-            'title' => ['required_without_all:user_list'],
+            'user_list'              => ['required_without_all:title'],
+            'title'                  => ['required_without_all:user_list'],
             'remove_existing_titles' => ['required_if:user_list,true'],
         ]);
 
         $titles = collect();
-        if ($request->has('title'))
-        {
+        if ($request->has('title')) {
             $titles->add(Title::find($request->get('title')));
         }
-        if ($request->has('user_list'))
-        {
+        if ($request->has('user_list')) {
             $userList = UserList::find($request->get('user_list'));
-            $titles = $userList->titles;
+            $titles   = $userList->titles;
         }
 
 
         $suggested_titles = collect();
-        $titles->each(function (Title $title) use (&$suggested_titles)
-        {
+        $titles->each(function (Title $title) use (&$suggested_titles) {
             $suggested_titles = $suggested_titles->merge($title->recommendations);
         });
         $suggested_titles = $suggested_titles->unique('imdb_id')->values();
 
-        $suggested_titles->each(function (Title $title)
-        {
+        $suggested_titles->each(function (Title $title) {
             UpdateTitle::dispatch($title);
         });
 

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Auth::routes();
+Auth::routes(['verify' => true]);
 
 Route::get('/', [\App\Http\Controllers\TitlesController::class, 'index'])->name('home');
 
@@ -22,10 +22,9 @@ Route::prefix('titles')->group(function () {
     Route::post('/new', [\App\Http\Controllers\TitlesController::class, 'insert'])->name('titles.insert');
 });
 
-Route::post('suggest',
-    [\App\Http\Controllers\UserListController::class, 'suggest'])->name('suggest');
+Route::post('suggest', [\App\Http\Controllers\UserListController::class, 'suggest'])->name('suggest');
 
-Route::prefix('lists')->middleware(['auth'])->group(function () {
+Route::prefix('lists')->group(function () {
     Route::get('/', [\App\Http\Controllers\UserListController::class, 'index'])->name('user-lists.index');
     Route::get('/new', [\App\Http\Controllers\UserListController::class, 'insertForm'])->name('user-lists.insert.form');
     Route::post('/new', [\App\Http\Controllers\UserListController::class, 'insert'])->name('user-lists.insert');

@@ -16,6 +16,11 @@ use function GuzzleHttp\Promise\all;
 
 class TitlesController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['guestOrVerified']);
+    }
+
     public function index(Request $request)
     {
         $request->validate([
