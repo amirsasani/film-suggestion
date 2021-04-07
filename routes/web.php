@@ -22,7 +22,7 @@ Route::prefix('titles')->group(function () {
     Route::post('/new', [\App\Http\Controllers\TitlesController::class, 'insert'])->name('titles.insert');
 });
 
-Route::post('suggest', [\App\Http\Controllers\UserListController::class, 'suggest'])->name('suggest');
+Route::post('suggest', [\App\Http\Controllers\SuggestionController::class, 'suggest'])->name('suggest');
 
 Route::prefix('lists')->group(function () {
     Route::get('/', [\App\Http\Controllers\UserListController::class, 'index'])->name('user-lists.index');
@@ -33,4 +33,10 @@ Route::prefix('lists')->group(function () {
         [\App\Http\Controllers\UserListController::class, 'addTitleToList'])->name('user-list.titles.add');
     Route::post('/{list}/remove/{title}',
         [\App\Http\Controllers\UserListController::class, 'removeTitleFromList'])->name('user-list.titles.remove');
+});
+
+Route::prefix('profile')->group(function () {
+    Route::get('/', [\App\Http\Controllers\UserController::class, 'profile'])->name('user.profile');
+    Route::get('/suggestions', [\App\Http\Controllers\UserController::class, 'suggestions'])->name('user.suggestions');
+    Route::get('/suggestions/{suggestion}', [\App\Http\Controllers\UserController::class, 'suggestion'])->name('user.suggestion');
 });
