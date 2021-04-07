@@ -6,25 +6,17 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Collection;
 
-class TitlesSuggestions extends Notification
+class TitlesSuggestions extends Notification implements ShouldQueue
 {
     use Queueable;
 
     /**
-     * @var Collection
-     */
-    private Collection $titles;
-
-    /**
      * Create a new notification instance.
      *
-     * @param  Collection  $titles
      */
-    public function __construct(Collection $titles)
+    public function __construct()
     {
-        $this->titles = $titles;
     }
 
     /**
@@ -46,22 +38,12 @@ class TitlesSuggestions extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage)->markdown(
-            'mails.titles.suggest',
-            ['titles' => $this->titles]
-        );
-    }
+        $url = route('home');
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toArray($notifiable)
-    {
-        return [
-            //
-        ];
+        return (new MailMessage)
+            ->greeting('Hello')
+            ->line('Your suggestion request is completed and you can view it in your profile.')
+            ->action('View suggestions', $url)
+            ->line('We hope you like the suggestions.');
     }
 }
